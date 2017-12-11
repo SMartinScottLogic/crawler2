@@ -1,0 +1,114 @@
+#!/bin/bash
+FAST="NO"
+TARGET="linux"
+DEBUG="NO"
+DIST="NO"
+
+cleanup()
+{
+    [ "${FAST}" = "YES" ] && return
+    echo "Performing cleanup";
+    [ -f Makefile ] && make clean
+    [ -f NEWS ] || touch NEWS
+    [ -f README ] || touch README
+    [ -f AUTHORS ] || touch AUTHORS
+    [ -f ChangeLog ] || touch ChangeLog
+
+    rm -f Makefile.in Makefile
+    rm -rf autom4te.cache/ stamp-h1
+    rm -rf config
+    rm -f config.h config.in config.log config.status
+    find . -depth \( -name ".deps" -or -name ".libs" \) -exec rm -rf {} \;
+
+    [ -d m4 ] || mkdir m4
+}
+
+setup_win()
+{
+    AR=/usr/bin/i586-mingw32msvc-ar
+    RANLIB=/usr/bin/i586-mingw32msvc-ranlib
+    NM=/usr/bin/i586-mingw32msvc-nm
+    CXXFLAGS="-march=i586"
+    LIBQT_CFLAGS="-I /data/simon/Qt4Win/2009.03/qt/include/ -I /data/simon/Qt4Win/2009.03/qt/include/Qt3Support/ -I /data/simon/Qt4Win/2009.03/qt/include/QtOpenGL/ -I /data/simon/Qt4Win/2009.03/qt/include/QtGui/ -DQT3_SUPPORT"
+    LIBQT_LIBS="-L/data/simon/Qt4Win/2009.03/qt/lib/ -lQt3Support4 -lQtNetwork4 -lQtSql4 -lQtOpenGL4 -lQtGui4 -lQtCore4"
+    WIN32="1"
+}
+
+reconfig()
+{
+    [ "${FAST}" = "YES" ] && return
+    [ "${TARGET}" = "win" ] && setup_win
+    echo "Re-configure"
+    autoreconf -iv -I m4 || exit 1
+}
+
+build()
+{
+    make -j 2 all || exit 1
+}
+
+distcheck()
+{
+    [ "${DIST}" = "YES" ] || return
+    echo "Dist check"
+    export NOLDCONFIG="1"
+    make -j 2 distcheck || exit 1
+}
+
+configure()
+{
+    if [ "${TARGET}" = "win" ]
+    then
+      ./configure --disable-debug --host=i586-mingw32msvc --build=i586-mingw32msvc --disable-static || exit 1
+      export LDFLAGS="-no-undefined"
+      return
+    fi
+    [ "${DEBUG}" = "NO" ] && ./configure --disable-debug $@
+    [ "${DEBUG}" = "YES" ] && ./configure --enable-debug $@
+}
+
+until [ -z "$1" ]
+do
+  case "$1" in
+  fast)
+    FAST="YES"
+    ;;
+  slow)
+    FAST="NO"
+    ;;
+  win)
+    TARGET="win"
+    ;;
+  linux)
+    TARGET="linux"
+    ;;
+  debug)
+    DEBUG="YES"
+    ;;
+  nodebug)
+    DEBUG="NO"
+    ;;
+  dist)
+    DIST="YES"
+    ;;
+  nodist)
+    DIST="NO"
+    ;;
+  help)
+    echo "Usage: $0 [fast|slow] [win|linux] [[no]debug] [[no]dist]"
+    exit
+    ;;
+  esac
+  shift
+done
+
+echo "FAST=${FAST}"
+echo "TARGET=${TARGET}"
+echo "DEBUG=${DEBUG}"
+echo "DIST=${DIST}"
+
+cleanup
+reconfig
+configure
+build
+distcheck
