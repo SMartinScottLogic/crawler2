@@ -81,14 +81,24 @@ answer_to_connection (void * /*cls*/, struct MHD_Connection *connection,
 
     MHD_get_connection_values(connection, MHD_HEADER_KIND, &print_out_key, NULL);
     fprintf(stderr, "> %s\n", data->entity.str().c_str());
-    std::stringstream ss;
+
+    std::string queue;
+    std::string url;
 
     try {
-    ptree pt;
-    read_json(data->entity, pt);
-    print_tree(pt, 1);
-    fprintf(stderr, "queue: %s\n", pt.get<std::string>("queue").c_str());
-    fprintf(stderr, "url: %s\n", pt.get<std::string>("url").c_str());
+      ptree pt;
+      read_json(data->entity, pt);
+      print_tree(pt, 1);
+      queue = pt.get<std::string>("queue");
+      url = pt.get<std::string>("url");
+      fprintf(stderr, "queue: %s\n", queue.c_str());
+      fprintf(stderr, "url: %s\n", queue.c_str());
+      if(have_seen[queue].find(url) == have_seen[queue].end()) {
+        fprintf(stderr, "add '%s' to queue '%s'\n", url.c_str(), queue.c_str());
+        have_seen[queue].insert(url);
+      } else {
+        fprintf(stderr, "'%s' already in queue '%s'\n", url.c_str(), queue.c_str());
+      }
     } catch(const boost::property_tree::json_parser::json_parser_error& e) {
       fprintf(stderr, "Invalid JSON: %s\n", e.what() );
     } catch(const boost::property_tree::ptree_bad_path& e) {
