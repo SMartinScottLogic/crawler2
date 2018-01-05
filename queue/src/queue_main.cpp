@@ -80,10 +80,14 @@ answer_to_connection (void * /*cls*/, struct MHD_Connection *connection,
     fprintf(stderr, "> %s\n", data->entity.str().c_str());
     std::stringstream ss;
 
+    try {
     ptree pt;
     read_json(data->entity, pt);
     print_tree(pt, 1);
     fprintf(stderr, "queue: %s\n", pt.get<std::string>("queue").c_str());
+    } catch(const boost::property_tree::json_parser::json_parser_error& e) {
+      fprintf(stderr, "Invalid JSON\n" );
+    }
     delete data;
     *con_cls = nullptr;
   } else {
