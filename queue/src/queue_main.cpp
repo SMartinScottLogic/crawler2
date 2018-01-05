@@ -20,6 +20,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#include <amqp.h>
+
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
@@ -134,6 +136,8 @@ int
 main ()
 {
   struct MHD_Daemon *daemon;
+
+  amqp_connection_state_t conn = amqp_new_connection();
 
   daemon = MHD_start_daemon (MHD_USE_SELECT_INTERNALLY, PORT, NULL, NULL,
                              &answer_to_connection, NULL, MHD_OPTION_END);

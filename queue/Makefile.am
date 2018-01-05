@@ -8,8 +8,8 @@ check_PROGRAMS =
 man1_MANS = 
 
 bin_PROGRAMS += queue
-queue_CXXFLAGS = $(HTTPD_CFLAGS) $(STXXL_CFLAGS) -DDATAROOTDIR=\"$(datarootdir)\"
-queue_LDADD = $(HTTPD_LIBS) $(STXXL_LIBS)
+queue_CXXFLAGS = $(HTTPD_CFLAGS) $(STXXL_CFLAGS) $(RABBITMQ_CFLAGS) -DDATAROOTDIR=\"$(datarootdir)\"
+queue_LDADD = $(HTTPD_LIBS) $(STXXL_LIBS) $(RABBITMQ_LIBS)
 queue_SOURCES = src/queue_main.cpp 
 
 bin_PROGRAMS += simplepost
