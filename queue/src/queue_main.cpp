@@ -16,12 +16,15 @@
 
 #include <sstream>
 #include <map>
+#include <set>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
+
+std::map<std::string, std::set<std::string>> have_seen;
 
 #define PORT 8888
 struct connection_data {
@@ -85,8 +88,11 @@ answer_to_connection (void * /*cls*/, struct MHD_Connection *connection,
     read_json(data->entity, pt);
     print_tree(pt, 1);
     fprintf(stderr, "queue: %s\n", pt.get<std::string>("queue").c_str());
+    fprintf(stderr, "url: %s\n", pt.get<std::string>("url").c_str());
     } catch(const boost::property_tree::json_parser::json_parser_error& e) {
-      fprintf(stderr, "Invalid JSON\n" );
+      fprintf(stderr, "Invalid JSON: %s\n", e.what() );
+    } catch(const boost::property_tree::ptree_bad_path& e) {
+      fprintf(stderr, "Bad tree: %s\n", e.what());
     }
     delete data;
     *con_cls = nullptr;
