@@ -25,6 +25,11 @@ using boost::property_tree::write_json;
 
 #define PORT 8888
 
+int print_out_key(void *cls, enum MHD_ValueKind kind, const char *key, const char *value) {
+  fprintf(stderr, "%s: %s\n", key, value);
+  return MHD_YES;
+}
+
 static int
 answer_to_connection (void *cls, struct MHD_Connection *connection,
                       const char *url, const char *method,
@@ -35,6 +40,8 @@ answer_to_connection (void *cls, struct MHD_Connection *connection,
   const char *page = "<html><body>Hello, browser!</body></html>";
 */
   fprintf(stderr, "%s %s %s\n", method, url, version);
+
+  MHD_get_connection_values(connection, MHD_HEADER_KIND, &print_out_key, NULL);
   static int call_count = 0;
   
   ptree pt;
