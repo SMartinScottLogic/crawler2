@@ -12,6 +12,11 @@ queue_CXXFLAGS = $(HTTPD_CFLAGS) $(STXXL_CFLAGS) -DDATAROOTDIR=\"$(datarootdir)\
 queue_LDADD = $(HTTPD_LIBS) $(STXXL_LIBS)
 queue_SOURCES = src/queue_main.cpp 
 
+bin_PROGRAMS += simplepost
+simplepost_CXXFLAGS = $(HTTPD_CFLAGS) $(STXXL_CFLAGS) -DDATAROOTDIR=\"$(datarootdir)\"
+simplepost_LDADD = $(HTTPD_LIBS) $(STXXL_LIBS)
+simplepost_SOURCES = src/simplepost.c 
+
 
 TESTS = $(check_PROGRAMS)
 DISTCLEANFILES = $(man1_MANS)
